@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>かえりみちヒーローズ2</title>
+<style>
+  :root { --safe-b: env(safe-area-inset-bottom); }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; background: #000;
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+    position: fixed; touch-action: none; overscroll-behavior: none;
+  }
+  #gameWrap {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #1a1a3a, #000);
+  }
+  #game { display: block; background: #000; image-rendering: auto; }
+
+  /* ===== オーバーレイ共通 ===== */
+  .overlay {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 30; text-align: center;
+    color: #fff; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  #titleScreen { background: transparent; z-index: 25; }
+  #pauseScreen { background: rgba(0,0,0,0.6); }
+  #gameoverScreen { background: rgba(20,0,0,0.85); }
+  #endingScreen { background: rgba(5,5,20,0.9); z-index: 35; overflow-y: auto; }
+  #negotiationOverlay { background: rgba(0,0,0,0.72); z-index: 40; }
+
+  .big-title { font-size: 30px; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 14px rgba(255,213,79,0.8); }
+  .sub { font-size: 15px; opacity: 0.85; margin-bottom: 22px; line-height: 1.7; }
+
+  .btn {
+    font-size: 18px; font-weight: bold; color: #1a1a2a;
+    background: linear-gradient(180deg, #fff3bf 0%, #ffd54f 52%, #ffb300 100%);
+    border: 1px solid rgba(255,255,255,0.7); border-radius: 14px; padding: 16px 34px; margin: 8px;
+    box-shadow: 0 8px 0 #b87800, 0 14px 22px rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.75);
+    cursor: pointer; min-width: 200px;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:active { transform: translateY(4px) scale(0.985); box-shadow: 0 3px 0 #b87800, 0 7px 12px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.55); }
+  .btn.gray {
+    background: linear-gradient(180deg, #f5f8fa 0%, #cfd8dc 54%, #90a4ae 100%);
+    box-shadow: 0 8px 0 #5c6f78, 0 14px 22px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.65);
+  }
+
+  /* ===== 交渉ダイアログ ===== */
+  #negotiationBox {
+    width: min(90%, 480px); background: rgba(20,20,40,0.95);
+    border: 3px solid #ffd54f; border-radius: 16px; padding: 22px;
+    box-shadow: 0 0 30px rgba(255,213,79,0.4);
+  }
+  .nego-name { font-size: 20px; font-weight: bold; color: #ffd54f; margin-bottom: 6px; }
+  .nego-line { font-size: 18px; margin-bottom: 20px; line-height: 1.6; }
+  .nego-choice {
+    display: block; width: 100%; font-size: 17px; color: #fff;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px; padding: 14px; margin: 10px 0; cursor: pointer; text-align: left;
+  }
+  .nego-choice:active { background: rgba(255,213,79,0.3); transform: scale(0.97); }
+  .nego-result { font-size: 19px; font-weight: bold; line-height: 1.6; }
+
+  #endingWeapons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0; max-width: 420px; }
+  .end-weapon { font-size: 14px; background: rgba(255,213,79,0.15); border: 1px solid #ffd54f; border-radius: 8px; padding: 6px 10px; }
+  .end-msg { font-size: 17px; line-height: 2; margin: 8px 0; }
+
+  /* ===== コントロール ===== */
+  #controls {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 20;
+    height: 24%; min-height: 150px;
+    padding: 8px 14px calc(8px + var(--safe-b)) 14px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    pointer-events: none;
+  }
+  #controls > * { pointer-events: auto; }
+  .dpad { position: relative; width: 168px; height: 130px; }
+  .ctl {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.16));
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 14px; color: #fff; font-size: 22px; font-weight: bold;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(0,0,0,0.2);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+    opacity: 0.78; transition: transform 0.08s ease, filter 0.12s ease, box-shadow 0.08s ease; touch-action: none;
+    backdrop-filter: blur(2px);
+  }
+  .ctl.pressed {
+    transform: scale(0.92) translateY(2px);
+    background: linear-gradient(180deg, rgba(255,222,128,0.82), rgba(255,179,0,0.56));
+    box-shadow: 0 3px 7px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.45);
+  }
+  .d-up    { width: 56px; height: 56px; left: 56px; top: 0; }
+  .d-down  { width: 56px; height: 56px; left: 56px; top: 70px; }
+  .d-left  { width: 56px; height: 56px; left: 0; top: 36px; }
+  .d-right { width: 56px; height: 56px; left: 112px; top: 36px; }
+
+  .mid-btns { display: flex; gap: 10px; align-self: flex-end; margin-bottom: 6px; }
+  .mid-btns .ctl { position: relative; width: 50px; height: 50px; font-size: 11px; }
+
+  .action { position: relative; width: 150px; height: 130px; }
+  .a-jump { width: 76px; height: 76px; right: 78px; bottom: 0; position: absolute; background: rgba(100,200,255,0.25); }
+  .a-atk  { width: 76px; height: 76px; right: 0; bottom: 30px; position: absolute; background: rgba(255,120,120,0.28); }
+
+  #muteBtn {
+    position: absolute; top: 10px; right: 10px; z-index: 22;
+    width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.55);
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(0,0,0,0.35));
+    color: #fff; font-size: 18px; opacity: 0.88;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform 0.08s ease, filter 0.12s ease;
+  }
+  #muteBtn:active { transform: translateY(2px) scale(0.96); }
+</style>
+</head>
+<body>
+  <div id="gameWrap">
+    <canvas id="game"></canvas>
+  </div>
+
+  <button id="muteBtn">🔊</button>
+
+  <!-- コントロール -->
+  <div id="controls">
+    <div class="dpad">
+      <div class="ctl d-up"    data-act="up">▲</div>
+      <div class="ctl d-down"  data-act="down">▼</div>
+      <div class="ctl d-left"  data-act="left">◀</div>
+      <div class="ctl d-right" data-act="right">▶</div>
+    </div>
+    <div class="mid-btns">
+      <div class="ctl" data-act="select">SEL</div>
+      <div class="ctl" data-act="start">▮▮</div>
+    </div>
+    <div class="action">
+      <div class="ctl a-jump" data-act="jump">A</div>
+      <div class="ctl a-atk"  data-act="attack">B</div>
+    </div>
+  </div>
+
+  <!-- タイトル -->
+  <div id="titleScreen" class="overlay"></div>
+
+  <!-- ポーズ -->
+  <div id="pauseScreen" class="overlay">
+    <div class="big-title">PAUSE</div>
+    <div class="sub">タップ または STARTで再開</div>
+  </div>
+
+  <!-- 交渉 -->
+  <div id="negotiationOverlay" class="overlay">
+    <div id="negotiationBox"></div>
+  </div>
+
+  <!-- ゲームオーバー -->
+  <div id="gameoverScreen" class="overlay">
+    <div class="big-title" style="color:#ff6e6e;">GAME OVER</div>
+    <div class="sub">武器は引き継がれます。<br>もう一度、この帰り道へ。</div>
+    <button id="continueBtn" class="btn">コンティニュー</button>
+    <button id="toTitleBtn" class="btn gray">タイトルへ</button>
+  </div>
+
+  <!-- エンディング -->
+  <div id="endingScreen" class="overlay">
+    <div class="big-title" style="color:#ffd54f;">― おかえり ―</div>
+    <div class="end-msg">長い帰り道だったね。</div>
+    <div class="end-msg">小学生だったあの日から、ずっとあなたは戦い続けた。</div>
+    <div class="end-msg" style="color:#ffd54f;">おかえり。そして、おつかれさま。</div>
+    <div id="endingWeapons"></div>
+    <button id="replayBtn" class="btn">もう一度、帰り道へ</button>
+  </div>
+
+  <!-- BGM -->
+  <audio id="bgm" preload="auto" playsinline></audio>
+
+  <!-- スクリプト（読込順が重要） -->
+  <script src="js/config.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/weapon-system.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/obstacle.js"></script>
+  <script src="js/negotiation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/init.js"></script>
+</body>
+</html>
