@@ -55,7 +55,7 @@ const STAGES = [
     enemyInterval: 75, enemyMax: 5,
     boss: { name: '学級委員', line: '廊下は走らないって言ったよね？',
       choices: ['走ってないよ', 'ごめんなさい', '知らない'], answer: 1,
-      drop: 'ruler', hp: 200 },
+      drop: 'ruler', hp: 120 },
   },
   {
     n: 2, name: '中学生の帰り道', appearance: '中学生',

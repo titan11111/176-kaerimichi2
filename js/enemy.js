@@ -15,7 +15,7 @@ class Enemy {
     this.dead = false;
     this.flash = 0;
     this.anim = Math.random() * 6;
-    this.touchDmg = 8 + stageN;
+    this.touchDmg = 14 + stageN;
   }
   get cx() { return this.x + this.w / 2; }
   get cy() { return this.y + this.h / 2; }
@@ -67,7 +67,7 @@ class Boss {
     this.dashing = false;
     this.dashCooldown = 200;
     this.anim = 0;
-    this.touchDmg = 12 + stageN;
+    this.touchDmg = 20 + stageN;
     this.bullets = [];
     this.enraged = false;
   }
@@ -136,7 +136,7 @@ class Boss {
       const off = (i - (count - 1) / 2) * spread;
       const a = baseAng + off;
       this.bullets.push(new BossBullet(
-        this.cx, this.cy, Math.cos(a) * speed, Math.sin(a) * speed, 10 + this.stageN
+        this.cx, this.cy, Math.cos(a) * speed, Math.sin(a) * speed, 15 + this.stageN
       ));
     }
   }

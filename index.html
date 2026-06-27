@@ -101,12 +101,13 @@
   .d-left  { width: 56px; height: 56px; left: 0; top: 36px; }
   .d-right { width: 56px; height: 56px; left: 112px; top: 36px; }
 
-  .mid-btns { display: flex; gap: 10px; align-self: flex-end; margin-bottom: 6px; }
-  .mid-btns .ctl { position: relative; width: 50px; height: 50px; font-size: 11px; }
+  .mid-btns { display: flex; gap: 10px; align-self: flex-end; margin-bottom: 10px; }
+  .mid-btns .ctl { position: relative; width: 58px; height: 28px; font-size: 10px; border-radius: 14px; }
 
-  .action { position: relative; width: 150px; height: 130px; }
-  .a-jump { width: 76px; height: 76px; right: 78px; bottom: 0; position: absolute; background: rgba(100,200,255,0.25); }
-  .a-atk  { width: 76px; height: 76px; right: 0; bottom: 30px; position: absolute; background: rgba(255,120,120,0.28); }
+  /* ゲームボーイ配置: B=左下 / A=右上 / 重ならない */
+  .action { position: relative; width: 172px; height: 150px; }
+  .a-atk  { width: 72px; height: 72px; left: 0;  bottom: 8px;  position: absolute; background: rgba(255,120,120,0.28); }
+  .a-jump { width: 72px; height: 72px; right: 0; bottom: 54px; position: absolute; background: rgba(100,200,255,0.25); }
 
   #muteBtn {
     position: absolute; top: 10px; right: 10px; z-index: 22;

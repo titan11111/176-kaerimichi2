@@ -20,8 +20,8 @@ class Projectile {
 
     const sp = weapon.speed || 0;
     switch (weapon.type) {
-      case 'melee_line': // 消しゴム：短い前方ヒットボックス、即消滅
-        this.x = x + dir * 20; this.vx = 0; this.vy = 0; this.life = 8; this.size = 18; break;
+      case 'melee_line': // 消しゴム：前方ヒットボックス（射程・判定を拡大）
+        this.x = x + dir * 44; this.vx = 0; this.vy = 0; this.life = 14; this.size = 32; break;
       case 'line':       // 定規
         this.vx = sp * dir; this.vy = 0; this.size = 10; break;
       case 'pierce':     // コンパス
